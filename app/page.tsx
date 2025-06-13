@@ -14,8 +14,7 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-    
-  const { signOut } = useAuthenticator();
+  const { user, signOut } = useAuthenticator(); // Fixed: removed duplicate destructuring
 
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
@@ -30,25 +29,53 @@ export default function App() {
   }, []);
 
   function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
-    });
+    const content = window.prompt("Todo content");
+    if (content) { // Added null check
+      client.models.Todo.create({
+        content,
+        isDone: false, // Added isDone field with default value
+      });
+    }
   }
   
   function deleteTodo(id: string) {
-    client.models.Todo.delete({ id })
+    client.models.Todo.delete({ id });
+  }
+
+  // Added function to toggle todo completion
+  function toggleTodo(id: string, currentIsDone: boolean) {
+    client.models.Todo.update({
+      id,
+      isDone: !currentIsDone,
+    });
   }
 
   return (
     <main>
-      <h1>My todos</h1>
+      <h1>{user?.signInDetails?.loginId}'s todos</h1>
       <button onClick={createTodo}>+ new</button>
       <ul>
         {todos.map((todo) => (
-          <li onClick={() => deleteTodo(todo.id)}
-              key={todo.id}>{todo.content}</li>
+          <li key={todo.id} style={{ 
+            textDecoration: todo.isDone ? 'line-through' : 'none',
+            cursor: 'pointer'
+          }}>
+            <span onClick={() => toggleTodo(todo.id, todo.isDone || false)}>
+              {todo.content} {todo.isDone ? '✓' : '○'}
+            </span>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent triggering toggle
+                deleteTodo(todo.id);
+              }}
+              style={{ marginLeft: '10px', color: 'red' }}
+            >
+              Delete
+            </button>
+          </li>
         ))}
       </ul>
+      <button onClick={signOut}>Sign out</button>
       <div>
         🥳 App successfully hosted. Try creating a new todo.
         <br />
@@ -56,7 +83,6 @@ export default function App() {
           Review next steps of this tutorial.
         </a>
       </div>
-            <button onClick={signOut}>Sign out</button>
     </main>
   );
 }

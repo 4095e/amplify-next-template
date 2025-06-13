@@ -10,8 +10,9 @@ const schema = a.schema({
   Todo: a
     .model({
       content: a.string(),
+      isDone: a.boolean(), // Added the isDone field as suggested
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.publicApiKey(), allow.owner()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
