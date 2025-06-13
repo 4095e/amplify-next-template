@@ -13,7 +13,8 @@
     "aws-amplify": "^6.6.6",
     "next": "^15.3.3",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-hook-form": "^7.57.0"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.5.1",
